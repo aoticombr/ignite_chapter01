@@ -7,16 +7,7 @@ const app = express();
 
 app.use(cors());
 app.use(express.json());
-
-/*{ 
-	id: 'uuid', // precisa ser um uuid
-	name: 'Danilo Vieira', 
-	username: 'danilo', 
-	todos: []
-}*/
-
- const users = [];
-
+const users = [];
  
 function checksExistsUserAccount(req, res, next) {
   const {username} = req.headers;
@@ -48,7 +39,7 @@ app.post('/users', (req, res) => {
 
 app.get('/todos', checksExistsUserAccount, (req, res) => {
    const {user} = req;
-   return res.status(200).json(user.todos);
+   return res.send(user.todos);
 });
 
 app.post('/todos', checksExistsUserAccount, (req, res) => {
@@ -64,47 +55,44 @@ app.post('/todos', checksExistsUserAccount, (req, res) => {
 
   user.todos.push(todo)
 
-  return res.status(200).json(user.todo);
+  return res.status(201).json(todo);  
 });
 
 app.put('/todos/:id', checksExistsUserAccount, (req, res) => {
   const {user}  = req;
   const {title, deadline} = req.body;
-  const {id}    = req.params.id;
+  const {id}    = req.params;
   const todo    = user.todos.find(todo => todo.id === id);
   if (!todo) {
-    return res.status(404).json({error:'Not Found'});   
+    return res.status(404).json({error:'Todo Not Found'});   
   } else {
     todo.title   = title;
-    todo.title   = new Date(deadline);
-    return res.status(200).json(todo);
-  }
-
-  
-     
+    todo.deadline   = new Date(deadline);
+    return res.status(201).json(todo);
+  }     
 });
 
 app.patch('/todos/:id/done', checksExistsUserAccount, (req, res) => {
   const {user}  = req;
-  const {id}    = req.params.id;
+  const {id}    = req.params;
   const todo    = user.todos.find(todo => todo.id === id);
   if (!todo) {
-    return res.status(404).json({error:'Not Found'});   
+    return res.status(404).json({error:'Todo Not Found'});   
   } else {
     todo.done   = true;
-    return res.status(200).json(todo);
+    return res.status(201).json(todo);
   }
 });
 
 app.delete('/todos/:id', checksExistsUserAccount, (req, res) => {
   const {user}  = req;
-  const {id}    = req.params.id;
-  const todo    = user.todos.find(todo => todo.id === id);
-  if (!todo) {
-    return res.status(404).json({error:'Not Found'});   
+  const {id}    = req.params;
+  const todoIndex    = user.todos.findIndex(todo => todo.id === id);
+  if (todoIndex === -1) {
+    return res.status(404).json({error:'Todo Not Found'});   
   } else {
-    _u.todos = _u.todos.filter(item => item.id !== _id);
-    return res.status(204).json(_u);
+    user.todos.splice(todoIndex,1);
+    return res.status(204).json();
   }  
 });
 
